@@ -1,0 +1,26 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# dbt
+dbt_project/target/
+dbt_project/logs/
+dbt_project/dbt_packages/
+target/
+logs/
+.user.yml
+
+# DuckDB
+*.duckdb
+*.duckdb.wal
+
+# Private notes
+INTERVIEW_NOTES.md
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/

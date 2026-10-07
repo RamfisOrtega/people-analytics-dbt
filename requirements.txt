@@ -1,0 +1,5 @@
+# Versions get pinned after the first successful install (Stage 1).
+faker
+pytest
+dbt-core
+dbt-duckdb
