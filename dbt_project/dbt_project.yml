@@ -21,6 +21,9 @@ models:
     marts:
       +schema: marts
       +materialized: table
+    restricted:
+      +schema: restricted
+      +materialized: table
 
 
 seeds:

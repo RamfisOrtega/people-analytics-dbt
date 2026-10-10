@@ -32,33 +32,29 @@ How data flows, left to right:
 
 ```mermaid
 flowchart LR
-    subgraph SRC["1 · Source"]
-        CSV["Synthetic CSV files<br/>+ planted bad rows"]
-    end
-
-    subgraph SEEDS["2 · Raw seeds (CSV)"]
+    subgraph SEEDS["1 · raw (CSV seeds + planted bad rows)"]
         RD["raw_departments"]
         RE["raw_employees"]
         RJ["raw_job_assignments"]
     end
 
-    subgraph STG["3 · Staging"]
+    subgraph STG["2 · staging (typed, light cleaning)"]
         SE["stg_employees<br/>email → email_hash"]
         SJ["stg_job_assignments"]
         SD["stg_departments"]
     end
 
-    subgraph DQ["4 · Quality"]
+    subgraph DQ["3 · quality"]
         CHK["int_record_checks<br/>one row per problem"]
         Q["quarantine_records<br/>reason codes"]
         V["stg_*_valid<br/>clean rows only"]
     end
 
-    subgraph PII["Restricted schema"]
+    subgraph PII["restricted (HR access only)"]
         P["pii_employee_contact<br/>names + emails"]
     end
 
-    subgraph MARTS["5 · Marts (no PII)"]
+    subgraph MARTS["4 · marts (no PII)"]
         DE["dim_employee<br/>SCD Type 2"]
         DD["dim_department"]
         DT["dim_date"]
@@ -66,7 +62,6 @@ flowchart LR
         FA["fct_attrition_monthly"]
     end
 
-    CSV --> RD & RE & RJ
     RD --> SD
     RE --> SE
     RJ --> SJ
@@ -126,7 +121,51 @@ _TODO (Stage 4)._
 
 ## Run on Snowflake (optional, not tested in CI)
 
-_TODO (Stage 4)._
+The same models run on Snowflake. Only the connection changes.
+
+> Status: set up, **not yet run on a real Snowflake account.** This note changes once it has been tested.
+
+**1. Install the Snowflake adapter** (venv active):
+
+```
+pip install dbt-snowflake
+```
+
+**2. Set your connection details as environment variables.** They are never stored in the repo.
+
+PowerShell:
+```
+$env:SNOWFLAKE_ACCOUNT   = "your-account"
+$env:SNOWFLAKE_USER      = "your-user"
+$env:SNOWFLAKE_PASSWORD  = "your-password"
+$env:SNOWFLAKE_ROLE      = "your-role"
+$env:SNOWFLAKE_WAREHOUSE = "your-warehouse"
+$env:SNOWFLAKE_DATABASE  = "your-database"
+```
+
+bash:
+```
+export SNOWFLAKE_ACCOUNT="your-account"
+export SNOWFLAKE_USER="your-user"
+export SNOWFLAKE_PASSWORD="your-password"
+export SNOWFLAKE_ROLE="your-role"
+export SNOWFLAKE_WAREHOUSE="your-warehouse"
+export SNOWFLAKE_DATABASE="your-database"
+```
+
+**3. Build** (from `dbt_project/`):
+
+```
+dbt build --target snowflake
+```
+
+What makes this portable:
+
+- **Seeds use explicit `column_types`,** so both databases load the CSVs the same way.
+- **The `hash_pii` macro** picks the right hash function: `sha256` on DuckDB, `sha2(..., 256)` on Snowflake.
+- **Each layer has its own schema** (`raw`, `staging`, `quality`, `marts`, `restricted`). In Snowflake, access can be granted per schema. For example, only HR roles get `restricted`.
+
+Your Snowflake account may need MFA or key-pair login instead of a password. If so, update the `snowflake` target in `profiles.yml`.
 
 ## Design decisions and trade-offs
 
