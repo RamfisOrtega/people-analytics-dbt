@@ -1,6 +1,6 @@
 -- One row per problem found. A row with 2 problems shows up twice.
 
-with employees as (
+with recursive employees as (
     select * from {{ ref('stg_employees') }}
 ),
 
@@ -100,10 +100,44 @@ overlapping_assignment as (
      and a.record_id <> b.record_id
      and a.start_date <= coalesce(b.end_date, date '9999-12-31')
      and b.start_date <= coalesce(a.end_date, date '9999-12-31')
+),
+
+-- Check 7: manager loop (A manages B, B manages A)
+-- Walk up the manager chain one step at a time.
+manager_chain as (
+    -- Start: each job, one step up
+    select
+        record_id,
+        employee_id as start_employee,
+        manager_id  as current_manager,
+        1           as depth
+    from assignments
+    where manager_id is not null
+
+    union all
+
+    -- Repeat: go to the manager's manager
+    select
+        c.record_id,
+        c.start_employee,
+        a.manager_id,
+        c.depth + 1
+    from manager_chain c
+    join assignments a on a.employee_id = c.current_manager
+    where a.manager_id is not null
+      and c.current_manager <> c.start_employee   -- stop once we are back at the start
+      and c.depth < 20                              -- safety net
+),
+
+manager_cycle as (
+    select distinct
+        'raw_job_assignments'     as source_table,
+        record_id,
+        'MANAGER_CYCLE'           as reason_code,
+        'employee appears in their own manager chain' as reason_detail
+    from manager_chain
+    where current_manager = start_employee
 )
-
-
-
 
 select * from missing_employee_fields
 union all
@@ -118,5 +152,7 @@ union all
 select * from outside_employment
 union all
 select * from overlapping_assignment
+union all
+select * from manager_cycle
 
 
