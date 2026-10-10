@@ -1,4 +1,5 @@
 select
+    trim(assignment_id) || '|' || trim(employee_id) as record_id,
     trim(assignment_id) as assignment_id,
     trim(employee_id)   as employee_id,
     trim(department_id) as department_id,
