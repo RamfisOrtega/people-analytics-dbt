@@ -1,5 +1,4 @@
-# Versions get pinned after the first successful install (Stage 1).
-faker
-pytest
-dbt-core
-dbt-duckdb
+faker==40.43.0
+pytest==9.1.1
+dbt-core==1.12.5
+dbt-duckdb==1.11.0
