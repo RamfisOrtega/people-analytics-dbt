@@ -1,1 +1,51 @@
-# dbt project config. Filled in Stage 2.
+name: people_analytics
+version: "1.0.0"
+profile: people_analytics
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  people_analytics:
+    staging:
+      +schema: staging
+      +materialized: view
+    quality:
+      +schema: quality
+      +materialized: table
+    marts:
+      +schema: marts
+      +materialized: table
+
+
+seeds:
+  people_analytics:
+    +schema: raw
+    raw_departments:
+      +column_types:
+        department_id: varchar
+        department_name: varchar
+    raw_employees:
+      +column_types:
+        employee_id: varchar
+        first_name: varchar
+        last_name: varchar
+        work_email: varchar
+        hire_date: date
+        termination_date: date
+        termination_type: varchar
+    raw_job_assignments:
+      +column_types:
+        assignment_id: varchar
+        employee_id: varchar
+        department_id: varchar
+        job_level: integer
+        manager_id: varchar
+        location_code: varchar
+        start_date: date
+        end_date: date

@@ -1,1 +1,19 @@
-# dbt profiles: duckdb (default) and snowflake (env vars). Filled in Stage 2.
+people_analytics:
+  target: dev
+  outputs:
+
+    dev:
+      type: duckdb
+      path: people_analytics.duckdb
+      threads: 4
+
+    snowflake:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT', '') }}"
+      user: "{{ env_var('SNOWFLAKE_USER', '') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD', '') }}"
+      role: "{{ env_var('SNOWFLAKE_ROLE', '') }}"
+      warehouse: "{{ env_var('SNOWFLAKE_WAREHOUSE', '') }}"
+      database: "{{ env_var('SNOWFLAKE_DATABASE', '') }}"
+      schema: "{{ env_var('SNOWFLAKE_SCHEMA', 'people_analytics') }}"
+      threads: 4
