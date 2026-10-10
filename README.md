@@ -4,7 +4,7 @@
 
 <!-- CI badge goes here in Stage 4 (repo: RamfisOrtega/people-analytics-dbt) -->
 
-> All data in this project is synthetic. It is made by Faker with a fixed seed. No real people or companies.
+> All data in this project is synthetic (made up). No real people or companies.
 
 ## Goals
 
@@ -32,8 +32,8 @@ How data flows, left to right:
 
 ```mermaid
 flowchart LR
-    subgraph PY["1 · Python"]
-        GEN["Data generator<br/>Faker, seed 42<br/>+ injected defects"]
+    subgraph SRC["1 · Source"]
+        CSV["Synthetic CSV files<br/>+ planted bad rows"]
     end
 
     subgraph SEEDS["2 · Raw seeds (CSV)"]
@@ -66,7 +66,7 @@ flowchart LR
         FA["fct_attrition_monthly"]
     end
 
-    GEN --> RD & RE & RJ
+    CSV --> RD & RE & RJ
     RD --> SD
     RE --> SE
     RJ --> SJ
